@@ -391,6 +391,7 @@ td.rating, td.num_ratings, td.downloaded {
 	padding-left: 15px;
 }
 
+.last_updated { width: 100px; }
 .rating { width: 70px; }
 .num_ratings { width: 100px; }
 .downloaded { width: 100px; }
