@@ -1,17 +1,20 @@
+<?php
+/**
+ * @package WordPress
+ * @subpackage Toolbox
+ */
+?>
 
-<hr />
-<div id="footer">
-<div id="footerarea">
-	<span id="footerleft">
-		&copy; <?php echo date('Y'); ?>. <?php bloginfo('name'); ?>. All rights reserved.
-	</span>
-    <span id="footerright"> 
-    	<!-- Please help promote WordPress and simpleX. Do not remove -->   
-		Powered by <a href="http://wordpress.org/">WordPress</a> &amp; <a href="http://wpshoppe.com">SimpleX</a> theme.	</span></div>
-</div>
-</div>
+	</div><!-- #main -->
 
-<!-- Simple design by Chandra Maharzan - http://wpshoppe.com/ -->
-		<?php wp_footer(); ?>
+	<footer id="colophon" role="contentinfo">
+			<div id="site-generator">
+				<a href="http://wordpress.org/" rel="generator">Proudly powered by WordPress</a><span class="sep"> | </span><?php printf( __( 'Theme: %1$s by %2$s.', 'toolbox' ), 'Toolbox', '<a href="http://automattic.com/" rel="designer">Automattic</a>' ); ?>
+			</div>
+	</footer><!-- #colophon -->
+</div><!-- #page -->
+
+<?php wp_footer(); ?>
+
 </body>
 </html>

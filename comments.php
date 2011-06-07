@@ -1,113 +1,128 @@
 <?php
+/**
+ * @package WordPress
+ * @subpackage Toolbox
+ */
 
-// Do not delete these lines
-	if (!empty($_SERVER['SCRIPT_FILENAME']) && 'comments.php' == basename($_SERVER['SCRIPT_FILENAME']))
-		die ('Please do not load this page directly. Thanks!');
+if ( ! function_exists( 'toolbox_comment' ) ) :
+/**
+ * Template for comments and pingbacks.
+ *
+ * To override this walker in a child theme without modifying the comments template
+ * simply create your own toolbox_comment(), and that function will be used instead.
+ *
+ * Used as a callback by wp_list_comments() for displaying the comments.
+ *
+ * @since Toolbox 0.4
+ */
+function toolbox_comment( $comment, $args, $depth ) {
+	$GLOBALS['comment'] = $comment;
+	switch ( $comment->comment_type ) :
+		case '' :
+	?>
+	<li <?php comment_class(); ?> id="li-comment-<?php comment_ID(); ?>">
+		<article id="comment-<?php comment_ID(); ?>" class="comment">
+			<footer>
+				<div class="comment-author vcard">
+					<?php echo get_avatar( $comment, 40 ); ?>
+					<?php printf( __( '%s <span class="says">says:</span>', 'toolbox' ), sprintf( '<cite class="fn">%s</cite>', get_comment_author_link() ) ); ?>
+				</div><!-- .comment-author .vcard -->
+				<?php if ( $comment->comment_approved == '0' ) : ?>
+					<em><?php _e( 'Your comment is awaiting moderation.', 'toolbox' ); ?></em>
+					<br />
+				<?php endif; ?>
 
-	if ( post_password_required() ) { ?>
-		<p class="nocomments">This post is password protected. Enter the password to view comments.</p>
+				<div class="comment-meta commentmetadata">
+					<a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>"><time pubdate datetime="<?php comment_time( 'c' ); ?>">
+					<?php
+						/* translators: 1: date, 2: time */
+						printf( __( '%1$s at %2$s', 'toolbox' ), get_comment_date(),  get_comment_time() ); ?>
+					</time></a>
+					<?php edit_comment_link( __( '(Edit)', 'toolbox' ), ' ' );
+					?>
+				</div><!-- .comment-meta .commentmetadata -->
+			</footer>
+
+			<div class="comment-content"><?php comment_text(); ?></div>
+
+			<div class="reply">
+				<?php comment_reply_link( array_merge( $args, array( 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?>
+			</div><!-- .reply -->
+		</article><!-- #comment-##  -->
+
 	<?php
-		return;
-	}
+			break;
+		case 'pingback'  :
+		case 'trackback' :
+	?>
+	<li class="post pingback">
+		<p><?php _e( 'Pingback:', 'toolbox' ); ?> <?php comment_author_link(); ?><?php edit_comment_link( __('(Edit)', 'toolbox'), ' ' ); ?></p>
+	<?php
+			break;
+	endswitch;
+}
+endif; // ends check for toolbox_comment()
+
 ?>
 
-<!-- You can start editing here. -->
+	<div id="comments">
+	<?php if ( post_password_required() ) : ?>
+		<div class="nopassword"><?php _e( 'This post is password protected. Enter the password to view any comments.', 'toolbox' ); ?></div>
+	</div><!-- .comments -->
+	<?php return;
+		endif;
+	?>
 
-<?php if ( have_comments() ) : ?>
-<div id="maintabdiv">
-<ul id="tabnav">
-<li><a href="#comments"  class="tabs current">Comments (<?php comments_number('0','1','%');?>)</a></li>
-<li><a href="#trackbacks" class="tabs">Trackbacks</a></li>
-</ul>
+	<?php // You can start editing here -- including this comment! ?>
 
-<?php if ( ! empty($comments_by_type['comment']) ) : ?>
-	
+	<?php if ( have_comments() ) : ?>
+		<h2 id="comments-title">
+			<?php
+			    printf( _n( 'One Response to %2$s', '%1$s Responses to %2$s', get_comments_number(), 'toolbox' ),
+			        number_format_i18n( get_comments_number() ), '<em>' . get_the_title() . '</em>' );
+			?>
+		</h2>
 
-	<div id="comments" class="commentlist">
-	<ol class="commentlist">
-	<?php wp_list_comments('type=comment'); ?>
-	</ol>
-	</div>
-<?php endif; ?>
+		<?php if ( get_comment_pages_count() > 1 && get_option( 'page_comments' ) ) : // are there comments to navigate through ?>
+		<nav id="comment-nav-above">
+			<h1 class="section-heading"><?php _e( 'Comment navigation', 'toolbox' ); ?></h1>
+			<div class="nav-previous"><?php previous_comments_link( __( '&larr; Older Comments', 'toolbox' ) ); ?></div>
+			<div class="nav-next"><?php next_comments_link( __( 'Newer Comments &rarr;', 'toolbox' ) ); ?></div>
+		</nav>
+		<?php endif; // check for comment navigation ?>
+
+		<ol class="commentlist">
+			<?php wp_list_comments( array( 'callback' => 'toolbox_comment' ) ); ?>
+		</ol>
+
+		<?php if ( get_comment_pages_count() > 1 && get_option( 'page_comments' ) ) : // are there comments to navigate through ?>
+		<nav id="comment-nav-below">
+			<h1 class="section-heading"><?php _e( 'Comment navigation', 'toolbox' ); ?></h1>
+			<div class="nav-previous"><?php previous_comments_link( __( '&larr; Older Comments', 'toolbox' ) ); ?></div>
+			<div class="nav-next"><?php next_comments_link( __( 'Newer Comments &rarr;', 'toolbox' ) ); ?></div>
+		</nav>
+		<?php endif; // check for comment navigation ?>
+
+	<?php else : // this is displayed if there are no comments so far ?>
+
+		<?php if ( comments_open() ) : // If comments are open, but there are no comments ?>
+
+		<?php else : // or, if we don't have comments:
+
+			/* If there are no comments and comments are closed,
+			 * let's leave a little note, shall we?
+			 * But only on posts! We don't want the note on pages.
+			 */
+			if ( ! comments_open() && ! is_page() ) :
+			?>
+			<p class="nocomments"><?php _e( 'Comments are closed.', 'toolbox' ); ?></p>
+			<?php endif; // end ! comments_open() && ! is_page() ?>
 
 
-
-
-<div id="trackbacks">
-<ol class="commentlist">
-<?php if ( ! empty($comments_by_type['pings']) ) : ?>
-<?php wp_list_comments('type=pings'); ?>
-<?php else : ?>
-<li>There are no trackbacks for this post yet.</li>
-<?php endif; ?>
-</ol>
-</div>
- </div> 
-
-	<div class="navigation">
-		<div class="alignleft"><?php previous_comments_link() ?></div>
-		<div class="alignright"><?php next_comments_link() ?></div>
-	</div>
-  
-
-	
- <?php else : // this is displayed if there are no comments so far ?>
-
-	<?php if ('open' == $post->comment_status) : ?>
-		<!-- If comments are open, but there are no comments. -->
-
-	 <?php else : // comments are closed ?>
-		<!-- If comments are closed. -->
-		<p class="nocomments">Comments are closed.</p>
+		<?php endif; ?>
 
 	<?php endif; ?>
-<?php endif; ?>
 
-<?php if ('open' == $post->comment_status) : ?>
+	<?php comment_form(); ?>
 
-<div id="respond">
-
-<h3><?php comment_form_title( 'Leave a Reply', 'Leave a Reply to %s' ); ?></h3>
-
-<div class="cancel-comment-reply">
-	<small><?php cancel_comment_reply_link(); ?></small>
-</div>
-
-<?php if ( get_option('comment_registration') && !$user_ID ) : ?>
-<p>You must be <a href="<?php echo get_option('siteurl'); ?>/wp-login.php?redirect_to=<?php echo urlencode(get_permalink()); ?>">logged in</a> to post a comment.</p>
-<?php else : ?>
-
-<form action="<?php echo get_option('siteurl'); ?>/wp-comments-post.php" method="post" id="commentform">
-
-<?php if ( $user_ID ) : ?>
-
-<p>Logged in as <a href="<?php echo get_option('siteurl'); ?>/wp-admin/profile.php"><?php echo $user_identity; ?></a>. <a href="<?php echo wp_logout_url(get_permalink()); ?>" title="Log out of this account">Log out &raquo;</a></p>
-
-<?php else : ?>
-
-<p><input type="text" name="author" id="author" value="<?php echo $comment_author; ?>" size="22" tabindex="1" <?php if ($req) echo "aria-required='true'"; ?> />
-<label for="author"><small>Name <?php if ($req) echo "(required)"; ?></small></label></p>
-
-<p><input type="text" name="email" id="email" value="<?php echo $comment_author_email; ?>" size="22" tabindex="2" <?php if ($req) echo "aria-required='true'"; ?> />
-<label for="email"><small>Mail (will not be published) <?php if ($req) echo "(required)"; ?></small></label></p>
-
-<p><input type="text" name="url" id="url" value="<?php echo $comment_author_url; ?>" size="22" tabindex="3" />
-<label for="url"><small>Website</small></label></p>
-
-<?php endif; ?>
-
-<!--<p><small><strong>XHTML:</strong> You can use these tags: <code><?php echo allowed_tags(); ?></code></small></p>-->
-
-<p><textarea name="comment" id="comment" cols="100%" rows="10" tabindex="4"></textarea></p>
-
-<p><input name="submit" type="submit" id="submit" tabindex="5" value="Submit Comment" />
-<?php comment_id_fields(); ?>
-</p>
-<?php do_action('comment_form', $post->ID); ?>
-
-</form>
-
-<?php endif; // If registration required and not logged in ?>
-</div>
-
-<?php endif; // if you delete this the sky will fall on your head ?>
+</div><!-- #comments -->

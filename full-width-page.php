@@ -1,12 +1,15 @@
 <?php
 /**
+ * Template Name: Full-width, no sidebar
+ * Description: A full-width template with no sidebar
+ *
  * @package WordPress
  * @subpackage Toolbox
  */
 
 get_header(); ?>
 
-		<div id="primary">
+		<div id="primary" class="full-width">
 			<div id="content" role="main">
 
 				<?php the_post(); ?>
@@ -18,5 +21,4 @@ get_header(); ?>
 			</div><!-- #content -->
 		</div><!-- #primary -->
 
-<?php get_sidebar(); ?>
 <?php get_footer(); ?>

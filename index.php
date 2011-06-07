@@ -1,40 +1,41 @@
-<?php get_header(); ?>
-	<div id="main">
-	<div id="content" class="narrowcolumn">
+<?php
+/**
+ * @package WordPress
+ * @subpackage Toolbox
+ */
 
-	<?php if (have_posts()) : ?>
+get_header(); ?>
 
-		<?php while (have_posts()) : the_post(); ?>
+		<div id="primary">
+			<div id="content" role="main">
 
-			<div class="post" id="post-<?php the_ID(); ?>">
-				<h2><a href="<?php the_permalink() ?>" rel="bookmark" title="Permanent Link to <?php the_title_attribute(); ?>"><?php the_title(); ?></a></h2>
-				<small>Posted in <?php the_category(', ') ?> on <?php the_time('F jS, Y') ?>  by <?php the_author() ?> &ndash; <?php comments_popup_link('Be the first to comment', '1 Comment', '% Comments'); ?> <?php edit_post_link('Edit', ' | ', ''); ?> </small>
+				<?php /* Display navigation to next/previous pages when applicable */ ?>
+				<?php if ( $wp_query->max_num_pages > 1 ) : ?>
+					<nav id="nav-above">
+						<h1 class="section-heading"><?php _e( 'Post navigation', 'toolbox' ); ?></h1>
+						<div class="nav-previous"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'toolbox' ) ); ?></div>
+						<div class="nav-next"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'toolbox' ) ); ?></div>
+					</nav><!-- #nav-above -->
+				<?php endif; ?>
+				
+				<?php /* Start the Loop */ ?>
+				<?php while ( have_posts() ) : the_post(); ?>
+					
+					<?php get_template_part( 'content', get_post_format() ); ?>
 
-				<div class="entry">
-					<?php the_content('<span class="more">read more &raquo;</span>') ?>
-				</div>
+				<?php endwhile; ?>
+				
+				<?php /* Display navigation to next/previous pages when applicable */ ?>
+				<?php if (  $wp_query->max_num_pages > 1 ) : ?>
+					<nav id="nav-below">
+						<h1 class="section-heading"><?php _e( 'Post navigation', 'toolbox' ); ?></h1>
+						<div class="nav-previous"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'toolbox' ) ); ?></div>
+						<div class="nav-next"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'toolbox' ) ); ?></div>
+					</nav><!-- #nav-below -->
+				<?php endif; ?>				
 
-				<?php if(is_single()) {?><p class="postmetadata"><?php the_tags('Tags: ', ', ', '<br />'); ?></p><?php } ?>
-			</div>
-
-		<?php endwhile; ?>
-
-		<div class="navigation">
-			<div class="alignleft"><?php next_posts_link('&laquo; Older Entries') ?></div>
-			<div class="alignright"><?php previous_posts_link('Newer Entries &raquo;') ?></div>
-		</div>
-
-	<?php else : ?>
-
-		<h2 class="center">Not Found</h2>
-		<p class="center">Sorry, but you are looking for something that isn't here.</p>
-		<?php include (TEMPLATEPATH . "/searchform.php"); ?>
-
-	<?php endif; ?>
-
-	</div>
+			</div><!-- #content -->
+		</div><!-- #primary -->
 
 <?php get_sidebar(); ?>
-</div>
-
 <?php get_footer(); ?>

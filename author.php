@@ -12,17 +12,7 @@ get_header(); ?>
 				<?php the_post(); ?>
 
 				<header class="page-header">
-					<h1 class="page-title">
-						<?php if ( is_day() ) : ?>
-							<?php printf( __( 'Daily Archives: <span>%s</span>', 'toolbox' ), get_the_date() ); ?>
-						<?php elseif ( is_month() ) : ?>
-							<?php printf( __( 'Monthly Archives: <span>%s</span>', 'toolbox' ), get_the_date( 'F Y' ) ); ?>
-						<?php elseif ( is_year() ) : ?>
-							<?php printf( __( 'Yearly Archives: <span>%s</span>', 'toolbox' ), get_the_date( 'Y' ) ); ?>
-						<?php else : ?>
-							<?php _e( 'Blog Archives', 'toolbox' ); ?>
-						<?php endif; ?>
-					</h1>
+					<h1 class="page-title author"><?php printf( __( 'Author Archives: <span class="vcard">%s</span>', 'toolbox' ), "<a class='url fn n' href='" . get_author_posts_url( get_the_author_meta( 'ID' ) ) . "' title='" . esc_attr( get_the_author() ) . "' rel='me'>" . get_the_author() . "</a>" ); ?></h1>
 				</header>
 
 				<?php rewind_posts(); ?>

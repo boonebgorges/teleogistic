@@ -1,65 +1,36 @@
-<?php get_header(); ?>
-<div id="main">
-	<div id="content" class="narrowcolumn">
+<?php
+/**
+ * @package WordPress
+ * @subpackage Toolbox
+ */
 
-	<?php if (have_posts()) : while (have_posts()) : the_post(); ?>
+get_header(); ?>
 
-		<div class="post" id="post-<?php the_ID(); ?>">
-			<h2><?php the_title(); ?></h2>
+		<div id="primary">
+			<div id="content" role="main">
 
-			<div class="entry">
-				<?php the_content('<p class="serif">Read the rest of this entry &raquo;</p>'); ?>
+			<?php if ( have_posts() ) while ( have_posts() ) : the_post(); ?>
 
-				<?php wp_link_pages(array('before' => '<p><strong>Pages:</strong> ', 'after' => '</p>', 'next_or_number' => 'number')); ?>
-				<?php the_tags( '<p class="postmetadata">Tags: ', ', ', '</p>'); ?>
+				<nav id="nav-above">
+					<h1 class="section-heading"><?php _e( 'Post navigation', 'toolbox' ); ?></h1>
+					<div class="nav-previous"><?php previous_post_link( '%link', '<span class="meta-nav">' . _x( '&larr;', 'Previous post link', 'toolbox' ) . '</span> %title' ); ?></div>
+					<div class="nav-next"><?php next_post_link( '%link', '%title <span class="meta-nav">' . _x( '&rarr;', 'Next post link', 'toolbox' ) . '</span>' ); ?></div>
+				</nav><!-- #nav-above -->
 
-				<p class="postmetadata2">
-					<small>
-						This entry was posted
-						<?php /* This is commented, because it requires a little adjusting sometimes.
-							You'll need to download this plugin, and follow the instructions:
-							http://binarybonsai.com/archives/2004/08/17/time-since-plugin/ */
-							/* $entry_datetime = abs(strtotime($post->post_date) - (60*120)); echo time_since($entry_datetime); echo ' ago'; */ ?>
-						on <?php the_time('l, F jS, Y') ?> at <?php the_time() ?>
-						and is filed under <?php the_category(', ') ?>.
-						You can follow any responses to this entry through the <?php post_comments_feed_link('RSS 2.0'); ?> feed.
+				<?php get_template_part( 'content', 'single' ); ?>
 
-						<?php if (('open' == $post-> comment_status) && ('open' == $post->ping_status)) {
-							// Both Comments and Pings are open ?>
-							You can <a href="#respond">leave a response</a>, or <a href="<?php trackback_url(); ?>" rel="trackback">trackback</a> from your own site.
+				<nav id="nav-below">
+					<h1 class="section-heading"><?php _e( 'Post navigation', 'toolbox' ); ?></h1>
+					<div class="nav-previous"><?php previous_post_link( '%link', '<span class="meta-nav">' . _x( '&larr;', 'Previous post link', 'toolbox' ) . '</span> %title' ); ?></div>
+					<div class="nav-next"><?php next_post_link( '%link', '%title <span class="meta-nav">' . _x( '&rarr;', 'Next post link', 'toolbox' ) . '</span>' ); ?></div>
+				</nav><!-- #nav-below -->
 
-						<?php } elseif (!('open' == $post-> comment_status) && ('open' == $post->ping_status)) {
-							// Only Pings are Open ?>
-							Responses are currently closed, but you can <a href="<?php trackback_url(); ?> " rel="trackback">trackback</a> from your own site.
+				<?php comments_template( '', true ); ?>
 
-						<?php } elseif (('open' == $post-> comment_status) && !('open' == $post->ping_status)) {
-							// Comments are open, Pings are not ?>
-							You can skip to the end and leave a response. Pinging is currently not allowed.
+			<?php endwhile; // end of the loop. ?>
 
-						<?php } elseif (!('open' == $post-> comment_status) && !('open' == $post->ping_status)) {
-							// Neither Comments, nor Pings are open ?>
-							Both comments and pings are currently closed.
+			</div><!-- #content -->
+		</div><!-- #primary -->
 
-						<?php } edit_post_link('Edit this entry','','.'); ?>
-
-					</small>
-				</p>
-
-			</div>
-            
-		</div>
-        
-
-	<?php comments_template('', true); ?>
-
-	<?php endwhile; else: ?>
-
-		<p>Sorry, no posts matched your criteria.</p>
-
-<?php endif; ?>
-
-	</div>
-	<?php get_sidebar(); ?>
-</div>
-    
+<?php get_sidebar(); ?>
 <?php get_footer(); ?>

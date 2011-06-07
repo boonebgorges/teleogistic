@@ -9,23 +9,13 @@ get_header(); ?>
 		<section id="primary">
 			<div id="content" role="main">
 
-				<?php the_post(); ?>
-
 				<header class="page-header">
-					<h1 class="page-title">
-						<?php if ( is_day() ) : ?>
-							<?php printf( __( 'Daily Archives: <span>%s</span>', 'toolbox' ), get_the_date() ); ?>
-						<?php elseif ( is_month() ) : ?>
-							<?php printf( __( 'Monthly Archives: <span>%s</span>', 'toolbox' ), get_the_date( 'F Y' ) ); ?>
-						<?php elseif ( is_year() ) : ?>
-							<?php printf( __( 'Yearly Archives: <span>%s</span>', 'toolbox' ), get_the_date( 'Y' ) ); ?>
-						<?php else : ?>
-							<?php _e( 'Blog Archives', 'toolbox' ); ?>
-						<?php endif; ?>
-					</h1>
-				</header>
+					<h1 class="page-title"><?php
+						printf( __( 'Category Archives: %s', 'toolbox' ), '<span>' . single_cat_title( '', false ) . '</span>' );
+					?></h1>
 
-				<?php rewind_posts(); ?>
+					<?php $categorydesc = category_description(); if ( ! empty( $categorydesc ) ) echo apply_filters( 'archive_meta', '<div class="archive-meta">' . $categorydesc . '</div>' ); ?>
+				</header>
 
 				<?php /* Display navigation to next/previous pages when applicable */ ?>
 				<?php if ( $wp_query->max_num_pages > 1 ) : ?>
