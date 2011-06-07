@@ -12,39 +12,8 @@ Template Name: Plugins
 global $groups_template;
 
 // Get the plugins from the repo
-$plugins = teleogistic_get_plugins();
-$group_ids = array();
-
-foreach( $plugins->plugins as $plugin_array_key => $plugin ) {
-	// Check to make sure this plugin has a group
-	if ( !empty( $plugin->name ) && !$group_id = groups_check_group_exists( $plugin->slug ) ) {
-		
-		/* Get the plugin contribs. Just me on this site */
-		$admin_ids = array( bp_core_get_userid( 'boonebgorges' ) );
-		
-		$args = array(
-			'name'		=> $plugin->name,
-			'creator_id'	=> $admin_ids[0],
-			'description'	=> $plugin->short_description,
-			'slug'		=> $plugin->slug,
-			'status'	=> 'public',
-			'enable_forum'	=> 1,
-			'date_created'	=> gmdate( "Y-m-d H:i:s" )
-		);
-			
-		if ( $group_id = groups_create_group( $args ) ) {
-			groups_update_groupmeta( $group_id, 'type', 'plugin' );
-			groups_update_groupmeta( $group_id, 'total_member_count', 1 );
-		}
-		
-		unset( $admin_ids, $group_id, $user_id );
-	}
-	
-	if ( $group_id ) {
-		$plugins->plugins[$plugin_array_key]->group_id = $group_id;
-		$group_ids[] = $group_id;
-	}
-}
+//$plugins = teleogistic_get_plugins();
+//$group_ids = array();
 
 // Load the sortable and pagination helpers
 require_once( get_stylesheet_directory() . '/lib/boones-sortable-columns.php' );
@@ -60,6 +29,11 @@ $cols = array(
 		'is_sortable' 	=> false
 	),
 	array(
+		'name'		=> 'last_updated',
+		'title'		=> 'Last Updated',
+		'default_order'	=> 'desc'
+	),
+	array(
 		'name'		=> 'description',
 		'title'		=> 'Description',
 		'is_sortable' 	=> false
@@ -73,7 +47,12 @@ $cols = array(
 		'name'		=> 'num_ratings',
 		'title'		=> 'Number of Ratings',
 		'default_order' => 'desc'
-	)	
+	),
+	array(
+		'name'		=> 'downloaded',
+		'title'		=> 'Downloads',
+		'default_order' => 'desc'
+	)
 );
 $sortable = new BBG_CPT_Sort( $cols );
 
@@ -87,9 +66,8 @@ get_header(); ?>
 
 				<?php get_template_part( 'content', 'page' ); ?>
 				
-				<?php if ( bp_has_groups( array( 'include' => $group_ids ) ) ) : ?>
-					<?php teleogistic_sort_plugin_groups( $plugins ) ?>
-				
+				<?php add_filter( 'bp_has_groups', 'teleogistic_sort_plugin_groups' ) ?>
+				<?php if ( bp_has_groups() ) : ?>
 					<table class="widefat">
 					
 					<thead>
@@ -103,14 +81,18 @@ get_header(); ?>
 					</thead>
 					
 					<tbody>
-					<?php while ( bp_groups() ) : bp_the_group() ?>
+					<?php while ( bp_groups() ) : bp_the_group() ?> 
 						<tr>
 							<td class="name">
 								<a href="<?php bp_group_permalink() ?>"><?php bp_group_name() ?></a>
 							</td>
 						
 							<td class="version">
-								<?php echo $groups_template->group->plugin_data->version ?>
+								<?php echo $groups_template->group->plugin_data['version'] ?>
+							</td>
+							
+							<td class="last_updated">
+								<?php echo $groups_template->group->plugin_data['last_updated'] ?>
 							</td>
 						
 							<td class="description">
@@ -118,11 +100,15 @@ get_header(); ?>
 							</td>
 							
 							<td class="rating">
-								<?php echo $groups_template->group->plugin_data->rating ?>
+								<?php echo $groups_template->group->plugin_data['rating'] ?>
 							</td>
 							
 							<td class="num_ratings">
-								<?php echo $groups_template->group->plugin_data->num_ratings ?>
+								<?php echo $groups_template->group->plugin_data['num_ratings'] ?>
+							</td>
+							
+							<td class="downloaded">
+								<?php echo number_format( $groups_template->group->plugin_data['downloaded'] ) ?>
 							</td>
 						
 						</tr>
@@ -131,6 +117,8 @@ get_header(); ?>
 					
 					</table>
 				<?php endif ?>
+				
+				<?php remove_filter( 'bp_has_groups', 'teleogistic_sort_plugin_groups' ) ?>
 				
 				<?php comments_template( '', true ); ?>
 

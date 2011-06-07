@@ -91,30 +91,78 @@ function teleogistic_get_plugins() {
 		}
 	}
 	
-	return $plugins;
+	foreach( $plugins->plugins as $plugin_array_key => $plugin ) {
+		$group_id = groups_check_group_exists( $plugin->slug );
+		
+		// Check to make sure this plugin has a group
+		if ( !empty( $plugin->name ) && !$group_id ) {
+			
+			/* Get the plugin contribs. Just me on this site */
+			$admin_ids = array( bp_core_get_userid( 'boonebgorges' ) );
+			
+			$args = array(
+				'name'		=> $plugin->name,
+				'creator_id'	=> $admin_ids[0],
+				'description'	=> $plugin->short_description,
+				'slug'		=> $plugin->slug,
+				'status'	=> 'public',
+				'enable_forum'	=> 1,
+				'date_created'	=> gmdate( "Y-m-d H:i:s" )
+			);
+				
+			if ( $group_id = groups_create_group( $args ) ) {
+				groups_update_groupmeta( $group_id, 'type', 'plugin' );
+				groups_update_groupmeta( $group_id, 'total_member_count', 1 );
+			}
+			
+			unset( $admin_ids, $group_id, $user_id );
+		} 
+		
+		if ( $group_id ) {
+			// Get some relevant data from the WP plugins API and store in BP metadata
+			// to save some hits
+			
+			$api = plugins_api( 'plugin_information', array( 'slug' => stripslashes( $plugin->slug ) ) );
+			
+			groups_update_groupmeta( $group_id, 'plugin_data', (array)$api );
+		}
+	}
 }
 
-function teleogistic_sort_plugin_groups( $plugins ) {
-	global $groups_template;
+function teleogistic_sort_plugin_groups( $has_groups ) {
+	global $groups_template, $wpdb, $bp;
 	
 	$gtgroups = $groups_template->groups;
 	
-	// While we're here, let's add some plugin data to the groups
-	$plugins_by_group_id = array();
-	foreach( $plugins->plugins as $plugin ) {
-		$gid = $plugin->group_id;
-		$plugins_by_group_id[$gid] = $plugin;
+	$gtgroups = array_values( $gtgroups );
+	
+	$group_ids = array();
+	foreach( $gtgroups as $group ) {
+		$group_ids[] = $group->id;
+	}
+	$group_ids = implode( ',', $group_ids );
+	
+	// Now I'll get the plugin_data from groupmeta in one fell swoop
+	$sql = $wpdb->prepare( "SELECT group_id, meta_value FROM {$bp->groups->table_name_groupmeta} WHERE meta_key = 'plugin_data' AND group_id IN ({$group_ids})" );
+	$metas = $wpdb->get_results( $sql );
+	
+	// Key by group_id
+	$plugin_data = array();
+	foreach( $metas as $meta ) {
+		$plugin_data[$meta->group_id] = maybe_unserialize( $meta->meta_value );
 	}
 	
-	foreach( $gtgroups as $g ) {
-		if ( isset( $plugins_by_group_id[$g->id] ) ) {
-			$g->plugin_data = $plugins_by_group_id[$g->id];
-		}
+	// Add the metadata to the list of groups
+	foreach( $gtgroups as $gtgroup_key => $group ) {
+		if ( isset( $plugin_data[$group->id] ) )
+			$gtgroups[$gtgroup_key]->plugin_data = $plugin_data[$group->id];
 	}
 	
 	uasort( $gtgroups, 'teleogistic_plugin_sorter' );
 	
 	$groups_template->groups = array_values( $gtgroups );
+	
+	return $has_groups;
 }
 
 function teleogistic_plugin_sorter( $a, $b ) {
@@ -127,8 +175,8 @@ function teleogistic_plugin_sorter( $a, $b ) {
 		return 0;
 	}
 	
-	$avalue = isset( $a->{$orderby} ) ? $a->{$orderby} : $a->plugin_data->{$orderby};
-	$bvalue = isset( $b->{$orderby} ) ? $b->{$orderby} : $b->plugin_data->{$orderby};
+	$avalue = isset( $a->{$orderby} ) ? $a->{$orderby} : $a->plugin_data[$orderby];
+	$bvalue = isset( $b->{$orderby} ) ? $b->{$orderby} : $b->plugin_data[$orderby];
 	
 	if ( $order == 'asc' )
 		return ( $avalue > $bvalue ) ? 1 : -1;
