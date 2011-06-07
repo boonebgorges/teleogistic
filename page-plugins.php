@@ -13,7 +13,7 @@ global $groups_template;
 
 // Get the plugins from the repo
 $plugins = teleogistic_get_plugins();
-$groups_xref = array();
+$group_ids = array();
 
 foreach( $plugins->plugins as $plugin_array_key => $plugin ) {
 	// Check to make sure this plugin has a group
@@ -41,7 +41,8 @@ foreach( $plugins->plugins as $plugin_array_key => $plugin ) {
 	}
 	
 	if ( $group_id ) {
-		$groups_xref[$plugin_array_key] = $group_id;
+		$plugins->plugins[$plugin_array_key]->group_id = $group_id;
+		$group_ids[] = $group_id;
 	}
 }
 
@@ -61,14 +62,17 @@ $cols = array(
 	array(
 		'name'		=> 'description',
 		'title'		=> 'Description',
+		'is_sortable' 	=> false
 	),
 	array(
 		'name'		=> 'rating',
 		'title'		=> 'Average Rating',
+		'default_order'	=> 'desc'
 	),
 	array(
 		'name'		=> 'num_ratings',
 		'title'		=> 'Number of Ratings',
+		'default_order' => 'desc'
 	)	
 );
 $sortable = new BBG_CPT_Sort( $cols );
@@ -83,8 +87,8 @@ get_header(); ?>
 
 				<?php get_template_part( 'content', 'page' ); ?>
 				
-				<?php if ( bp_has_groups( array( 'include' => $groups_xref ) ) ) : ?>
-					<?php teleogistic_sort_plugin_groups( $plugins, $groups_xref ) ?>
+				<?php if ( bp_has_groups( array( 'include' => $group_ids ) ) ) : ?>
+					<?php teleogistic_sort_plugin_groups( $plugins ) ?>
 				
 					<table class="widefat">
 					
@@ -106,7 +110,7 @@ get_header(); ?>
 							</td>
 						
 							<td class="version">
-								<?php bp_group_name() ?>
+								<?php echo $groups_template->group->plugin_data->version ?>
 							</td>
 						
 							<td class="description">
@@ -114,11 +118,11 @@ get_header(); ?>
 							</td>
 							
 							<td class="rating">
-								<?php bp_group_name() ?>
+								<?php echo $groups_template->group->plugin_data->rating ?>
 							</td>
 							
 							<td class="num_ratings">
-								<?php bp_group_name() ?>
+								<?php echo $groups_template->group->plugin_data->num_ratings ?>
 							</td>
 						
 						</tr>

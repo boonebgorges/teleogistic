@@ -94,9 +94,46 @@ function teleogistic_get_plugins() {
 	return $plugins;
 }
 
-function teleogistic_sort_plugin_groups( $plugins, $groups_xref ) {
+function teleogistic_sort_plugin_groups( $plugins ) {
 	global $groups_template;
 	
+	$gtgroups = $groups_template->groups;
+	
+	// While we're here, let's add some plugin data to the groups
+	$plugins_by_group_id = array();
+	foreach( $plugins->plugins as $plugin ) {
+		$gid = $plugin->group_id;
+		$plugins_by_group_id[$gid] = $plugin;
+	}
+	
+	foreach( $gtgroups as $g ) {
+		if ( isset( $plugins_by_group_id[$g->id] ) ) {
+			$g->plugin_data = $plugins_by_group_id[$g->id];
+		}
+	}
+	
+	uasort( $gtgroups, 'teleogistic_plugin_sorter' );
+	
+	$groups_template->groups = array_values( $gtgroups );
+}
+
+function teleogistic_plugin_sorter( $a, $b ) {
+	global $sortable;
+	
+	$orderby = $sortable->get_orderby;
+	$order = $sortable->get_order;
+	
+	if ( $a == $b ) {
+		return 0;
+	}
+	
+	$avalue = isset( $a->{$orderby} ) ? $a->{$orderby} : $a->plugin_data->{$orderby};
+	$bvalue = isset( $b->{$orderby} ) ? $b->{$orderby} : $b->plugin_data->{$orderby};
+	
+	if ( $order == 'asc' )
+		return ( $avalue > $bvalue ) ? 1 : -1;
+	else
+		return ( $avalue > $bvalue ) ? -1 : 1;
 }
 
 /**
